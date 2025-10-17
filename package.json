@@ -4,14 +4,18 @@
   "description": "Code the Dream task store",
   "main": "app.js",
   "type": "commonjs",
+  "engines": { "node": "20.x", "npm": "10.x" },
   "scripts": {
     "test": "npx cross-env NODE_ENV=test jest --testPathPatterns=test/ --verbose --maxWorkers=1",
     "dev": "nodemon app.js",
     "start": "node app",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "build": "npx prisma migrate deploy",
+    "devbuild": "npx prisma migrate dev",
+    "testbuild": "DATABASE_URL=postgresql://john@localhost/tasklisttest?host=/var/run/postgresql npx prisma migrate dev"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Code The Dream",
+  "license": "MIT",
   "dependencies": {
     "@prisma/client": "^6.10.1",
     "cookie-parser": "^1.4.7",
