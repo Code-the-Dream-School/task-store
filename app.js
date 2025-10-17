@@ -51,6 +51,8 @@ const userRouter = require("./routes/user");
 app.use("/user", userRouter);
 const taskRouter = require("./routes/task");
 app.use("/tasks", jwtMiddleware, taskRouter);
+const swaggerRouter = require("./routes/swagger");
+app.use("/swagger", swaggerRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
