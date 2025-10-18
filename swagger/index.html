@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>API Documentation</title>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css" />
+  <script>
+    function onCaptchaCorrectSet (token) {
+      document.getElementById("captcha-container").remove();
+      SwaggerUIBundle({
+        layout: "StandaloneLayout",
+        url: "/swagger/config.yaml?recaptchaToken=" + token,
+        dom_id: "#swagger-ui",
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        deepLinking: true
+      });
+    }
+  </script>
+  <style>
+      body { font-family: sans-serif; margin: 0; }
+      .container { max-width: 400px; margin: auto; }
+      .captcha-container { margin-top: 80px; text-align: center; }
+      .g-recaptcha { display: flex; justify-content: center; }
+
+      /* hide saggerUI redundant elements */
+      .swagger-ui .topbar .download-url-wrapper { display: none; }
+      .information-container .url{ display: none; }
+  </style>
+</head>
+<body>
+<div id="swagger-ui"></div>
+<div class="captcha-container" id="captcha-container">
+  <h2>Verify Access to API Docs</h2>
+  <form>
+    <div class="g-recaptcha"
+         data-callback="onCaptchaCorrectSet"
+         data-sitekey="${process.env.RECAPTCHA_SITE_KEY}"></div>
+  </form>
+</div>
+</body>
+</html>

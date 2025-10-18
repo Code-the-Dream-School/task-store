@@ -4,7 +4,7 @@ info:
   description: ''
   version: 1.0.0
 servers:
-  - url: http://localhost:3000 #https://node-homework-sample.onrender.com/
+  - url: https://node-homework-sample.onrender.com/
 tags:
   - name: user
     description: Authorization
