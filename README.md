@@ -18,7 +18,6 @@ DATABASE_URL (dev postgres database or, for deployment, the production postgres)
 ALLOWED_ORIGINS=http://localhost:3000
 GOOGLE_CLIENT_ID (for support of Google logon)
 GOOGLE_CLIENT_SECRET
-RECAPTCHA_SITE_KEY
 RECAPTCHA_SECRET
 MAX_TASKS_PER_USER (default is 100)
 ```
