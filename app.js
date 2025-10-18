@@ -8,6 +8,9 @@ const helmet = require("helmet");
 const cors = require("cors");
 const { xss } = require("express-xss-sanitizer");
 const rateLimiter = require("express-rate-limit");
+const swaggerUI = require("swagger-ui-express");
+const YAML = require("yamljs");
+const swaggerDocument = YAML.load("./swagger/swagger.yaml");
 const app = express();
 
 // error handler
@@ -45,9 +48,7 @@ if (origins.length) {
     }),
   );
 }
-
-const swaggerRouter = require("./swagger/swagger-router");
-app.use("/swagger", swaggerRouter);
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 const jwtMiddleware = require("./middleware/jwtMiddleware");
 const userRouter = require("./routes/user");

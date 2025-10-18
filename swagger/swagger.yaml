@@ -4,7 +4,7 @@ info:
   description: ''
   version: 1.0.0
 servers:
-  - url: https://node-homework-sample.onrender.com/
+  - url: http://node-homework-sample.onrender.com/
 tags:
   - name: user
     description: Authorization
@@ -12,10 +12,11 @@ tags:
     description: Access to Tasks
 components:
   securitySchemes:
-    cookieAuth:
+    CSRFToken:
       type: apiKey
-      in: cookie
-      name: jwt
+      in: header
+      name: X-CSRF-TOKEN
+      description: CSRF Token required for Tasks operations.
 paths:
   /user:
     post:
@@ -23,7 +24,6 @@ paths:
         - user
       summary: Email registration
       description: 'User registration with email and password'
-      parameters: [ ]
       responses:
         '201':
           description: User created
@@ -63,7 +63,6 @@ paths:
         - user
       summary: Email logon
       description: 'User logon with email and password'
-      parameters: []
       responses:
         '200':
           description: Successful response
@@ -99,7 +98,6 @@ paths:
         - user
       summary: Google registration/logon
       description: 'User registration/logon with google account'
-      parameters: [ ]
       responses:
         '200':
           description: Successful response
@@ -133,9 +131,8 @@ paths:
         - user
       summary: Logoff
       description: 'User logoff'
-      parameters: []
       security:
-        - cookieAuth: []
+        - CSRFToken: []
       responses:
         '200':
           description: Successful response
@@ -150,9 +147,8 @@ paths:
         - tasks
       summary: Create Task
       description: ''
-      parameters: []
       security:
-        - cookieAuth: []
+        - CSRFToken: []
       responses:
         '201':
           description: Created
@@ -190,7 +186,7 @@ paths:
             type: string
           description: search by the title
       security:
-        - cookieAuth: []
+        - CSRFToken: []
       responses:
         '200':
           description: Successful response
@@ -209,7 +205,7 @@ paths:
             type: string
           description: task id
       security:
-        - cookieAuth: []
+        - CSRFToken: []
       responses:
         '200':
           description: Successful response
@@ -227,7 +223,7 @@ paths:
             type: string
           description: task id
       security:
-        - cookieAuth: []
+        - CSRFToken: []
       responses:
         '200':
           description: Successful response
@@ -255,7 +251,7 @@ paths:
             type: string
           description: task id
       security:
-        - cookieAuth: []
+        - CSRFToken: []
       responses:
         '200':
           description: Successful response
