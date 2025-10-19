@@ -11,6 +11,12 @@ const { randomUUID } = require("crypto");
 const jwt = require("jsonwebtoken");
 
 const prisma = require("../db/prisma");
+const cookieFlags = {
+  ...(process.env.NODE_ENV === "production" && { domain: req.hostname }), // add domain into cookie for production only
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+};
 
 const setJwtCookie = (req, res, user) => {
   // Sign JWT
@@ -19,20 +25,14 @@ const setJwtCookie = (req, res, user) => {
   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" }); // 1 hour expiration
 
   // Set cookie.  Note that the cookie flags have to be different in production and in test.
-  res.cookie("jwt", token, {
-    ...(process.env.NODE_ENV === "production" && { domain: req.hostname }), // add domain into cookie for production only
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-    maxAge: 3600000, // 1 hour expiration.  Ends up as max-age 3600 in the cookie.
-  });
+  res.cookie("jwt", token, { ...cookieFlags, maxAge: 3600000 }); // 1 hour expiration
   return payload.csrfToken; // this is needed in the body returned by login() or register()
 };
 
 const login = async (req, res) => {
   const { user, isValid } = await verifyUserPassword(
     req?.body?.email,
-    req?.body?.password,
+    req?.body?.password
   );
   if (!isValid) {
     return res
@@ -47,18 +47,27 @@ const googleLogon = async (req, res) => {
   try {
     if (!req.body.code) {
       // throw new Error("Required body parameter missing: 'code'.");
-      return res.status(StatusCodes.UNAUTHORIZED).json({message: "The Google authentication code was not provided."});
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "The Google authentication code was not provided." });
     }
     const googleAccessToken = await googleGetAccessToken(req.body.code);
     const googleUserInfo = await googleGetUserInfo(googleAccessToken);
 
     if (!googleUserInfo.email || !googleUserInfo.isEmailVerified) {
       // throw new Error("The email is either missing or not verified.");
-      return res.status(StatusCodes.UNAUTHORIZED).json({message: "Google did not include the email, or it hasn't been verified."});
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({
+          message:
+            "Google did not include the email, or it hasn't been verified.",
+        });
     }
     if (!googleUserInfo.name) {
       // throw new Error("The name is missing.");
-      return res.status(StatusCodes.UNAUTHORIZED).json({message: "Google did not include the user name."});
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "Google did not include the user name." });
     }
 
     let user = await prisma.user.findFirst({
@@ -107,7 +116,7 @@ const register = async (req, res) => {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-      },
+      }
     );
     const data = await response.json();
     if (data.success) isPerson = true;
@@ -145,7 +154,7 @@ const register = async (req, res) => {
 };
 
 const logoff = async (req, res) => {
-  res.clearCookie("jwt");
+  res.clearCookie("jwt", cookieFlags);
   res.sendStatus(StatusCodes.OK);
 };
 
