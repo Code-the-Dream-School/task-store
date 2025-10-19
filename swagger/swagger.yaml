@@ -1,0 +1,259 @@
+openapi: 3.0.4
+info:
+  title: Tasks store
+  description: ''
+  version: 1.0.0
+servers:
+  - url: https://node-homework-sample.onrender.com/
+tags:
+  - name: user
+    description: Authorization
+  - name: tasks
+    description: Access to Tasks
+components:
+  securitySchemes:
+    CSRFToken:
+      type: apiKey
+      in: header
+      name: X-CSRF-TOKEN
+      description: CSRF Token required for Tasks operations.
+paths:
+  /user:
+    post:
+      tags:
+        - user
+      summary: Email registration
+      description: 'User registration with email and password'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  csrfToken:
+                    type: string
+                  name:
+                    type: string
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: jwt=<string>; Max-Age=3600; Path=/; HttpOnly;
+        '400':
+          description: Bad request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                recaptchaToken:
+                  type: string
+  /user/logon:
+    post:
+      tags:
+        - user
+      summary: Email logon
+      description: 'User logon with email and password'
+      responses:
+        '200':
+          description: Successful response
+          content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    csrfToken:
+                      type: string
+                    name:
+                      type: string
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: jwt=<string>; Max-Age=3600; Path=/; HttpOnly;
+        '401':
+          description: Unauthorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+  /user/googleLogon:
+    post:
+      tags:
+        - user
+      summary: Google registration/logon
+      description: 'User registration/logon with google account'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  csrfToken:
+                    type: string
+                  name:
+                    type: string
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: jwt=<string>; Max-Age=3600; Path=/; HttpOnly;
+        '401':
+          description: Unauthorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+  /user/logoff:
+    post:
+      tags:
+        - user
+      summary: Logoff
+      description: 'User logoff'
+      security:
+        - CSRFToken: []
+      responses:
+        '200':
+          description: Successful response
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+  /tasks:
+    post:
+      tags:
+        - tasks
+      summary: Create Task
+      description: ''
+      security:
+        - CSRFToken: []
+      responses:
+        '201':
+          description: Created
+        '429':
+          description: Maximum tasks exceeded
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                isCompleted:
+                  type: boolean
+    get:
+      tags:
+        - tasks
+      summary: Get Tasks
+      description: ''
+      parameters:
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+          description: title, creationDate
+        - in: query
+          name: sortDirection
+          schema:
+            type: string
+          description: asc, desc
+        - in: query
+          name: find
+          schema:
+            type: string
+          description: search by the title
+      security:
+        - CSRFToken: []
+      responses:
+        '200':
+          description: Successful response
+        '404':
+          description: Tasks not found
+  /tasks/{id}:
+    get:
+      tags:
+        - tasks
+      summary: Get Task
+      description: ''
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: task id
+      security:
+        - CSRFToken: []
+      responses:
+        '200':
+          description: Successful response
+        '404':
+          description: Not found
+    patch:
+      tags:
+        - tasks
+      summary: Update Task
+      description: ''
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: task id
+      security:
+        - CSRFToken: []
+      responses:
+        '200':
+          description: Successful response
+        '404':
+          description: Not found
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                isCompleted:
+                  type: boolean
+    delete:
+      tags:
+        - tasks
+      summary: Delete Task
+      description: ''
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          description: task id
+      security:
+        - CSRFToken: []
+      responses:
+        '200':
+          description: Successful response
+        '404':
+          description: Not found
