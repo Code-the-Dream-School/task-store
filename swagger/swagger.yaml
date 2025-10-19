@@ -23,7 +23,9 @@ paths:
       tags:
         - user
       summary: Email registration
-      description: 'User registration with email and password'
+      description: 'User registration with email and password. 
+                    Npm module "react-google-recaptcha" can be used to receive "recaptchaToken" in a React app.
+                    RECAPTCHA_SITE_KEY=6LdWAuwrAAAAAFG5iD5Dx1TgS1Ra_cTRupj_2XI0'
       responses:
         '201':
           description: User created
@@ -97,7 +99,9 @@ paths:
       tags:
         - user
       summary: Google registration/logon
-      description: 'User registration/logon with google account'
+      description: 'User registration/logon with google account. 
+                    Npm module "@react-oauth/google" can be used to receive "code" in a React app.
+                    GOOGLE_CLIENT_ID=70307905223-q2aotbi7q35p25a1m9bg6dja862kvug1.apps.googleusercontent.com'
       responses:
         '200':
           description: Successful response
