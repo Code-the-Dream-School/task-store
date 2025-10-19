@@ -11,11 +11,13 @@ const { randomUUID } = require("crypto");
 const jwt = require("jsonwebtoken");
 
 const prisma = require("../db/prisma");
-const cookieFlags = {
-  ...(process.env.NODE_ENV === "production" && { domain: req.hostname }), // add domain into cookie for production only
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+const cookieFlags = (req) => {
+  return {
+    ...(process.env.NODE_ENV === "production" && { domain: req.hostname }), // add domain into cookie for production only
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+  };
 };
 
 const setJwtCookie = (req, res, user) => {
@@ -25,7 +27,7 @@ const setJwtCookie = (req, res, user) => {
   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" }); // 1 hour expiration
 
   // Set cookie.  Note that the cookie flags have to be different in production and in test.
-  res.cookie("jwt", token, { ...cookieFlags, maxAge: 3600000 }); // 1 hour expiration
+  res.cookie("jwt", token, { ...cookieFlags(req), maxAge: 3600000 }); // 1 hour expiration
   return payload.csrfToken; // this is needed in the body returned by login() or register()
 };
 
@@ -56,12 +58,10 @@ const googleLogon = async (req, res) => {
 
     if (!googleUserInfo.email || !googleUserInfo.isEmailVerified) {
       // throw new Error("The email is either missing or not verified.");
-      return res
-        .status(StatusCodes.UNAUTHORIZED)
-        .json({
-          message:
-            "Google did not include the email, or it hasn't been verified.",
-        });
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        message:
+          "Google did not include the email, or it hasn't been verified.",
+      });
     }
     if (!googleUserInfo.name) {
       // throw new Error("The name is missing.");
@@ -154,7 +154,7 @@ const register = async (req, res) => {
 };
 
 const logoff = async (req, res) => {
-  res.clearCookie("jwt", cookieFlags);
+  res.clearCookie("jwt", cookieFlags(req));
   res.sendStatus(StatusCodes.OK);
 };
 
