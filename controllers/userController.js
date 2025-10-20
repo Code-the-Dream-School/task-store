@@ -82,7 +82,7 @@ const googleLogon = async (req, res) => {
     if (!user) {
       const randomPassword = generateUserPassword();
       // TODO: notify user with generated password
-      console.log(`Creating user with a random password.`);
+      console.log("Creating user with a random password.");
       user = await createUser({
         name: googleUserInfo.name,
         email: googleUserInfo.email,
