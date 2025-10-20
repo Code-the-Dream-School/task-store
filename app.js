@@ -49,7 +49,7 @@ if (origins.length) {
   );
 }
 // app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
-app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
+app.use('/api-docs', swaggerUI.serve, (req, res, next) => {
   // Create a fresh spec object dynamically per request
   const spec = {
     ...swaggerDocument,
@@ -59,7 +59,7 @@ app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
   };
 
   // Serve Swagger UI with the dynamic spec
-  swaggerUi.setup(spec)(req, res, next);
+  swaggerUI.setup(spec)(req, res, next);
 });
 
 const jwtMiddleware = require("./middleware/jwtMiddleware");
