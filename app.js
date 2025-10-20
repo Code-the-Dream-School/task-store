@@ -48,7 +48,19 @@ if (origins.length) {
     }),
   );
 }
-app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+// app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
+  // Create a fresh spec object dynamically per request
+  const spec = {
+    ...swaggerDocument,
+    servers: [
+      { url: `${req.protocol}://${req.get('host')}` }
+    ]
+  };
+
+  // Serve Swagger UI with the dynamic spec
+  swaggerUi.setup(spec)(req, res, next);
+});
 
 const jwtMiddleware = require("./middleware/jwtMiddleware");
 const userRouter = require("./routes/user");
