@@ -1,7 +1,7 @@
 const { defineConfig } = require("eslint/config");
 const js = require("@eslint/js");
 const globals = require("globals");
-const pluginJest = require('eslint-plugin-jest');
+const pluginJest = require("eslint-plugin-jest");
 
 module.exports = defineConfig([
   {
@@ -12,13 +12,14 @@ module.exports = defineConfig([
   {
     files: ["**/*.js"],
     ignores: ["./tdd/**/*.js", "./test/**/*.js", "./load-db.js"],
-    languageOptions: {sourceType: "commonjs", globals: {...globals.node}},
-    plugins: {js},
+    languageOptions: { sourceType: "commonjs", globals: { ...globals.node } },
+    plugins: { js },
     extends: ["js/recommended"],
     rules: {
-      "quotes": ["error", "double"],
-      "indent": ["error", 2, {"SwitchCase": 1}],
-      "semi": ["error", "always"],
+      quotes: ["error", "double"],
+      indent: ["error", 2, { SwitchCase: 1 }],
+      semi: ["error", "always"],
+      "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
     },
   },
   {
@@ -28,20 +29,19 @@ module.exports = defineConfig([
   {
     ignores: ["**/generated/*", "**/node_modules/*"],
   },
-    {
+  {
     // update this to match your test files
-    files: ['**/*.spec.js', '**/*.test.js'],
+    files: ["**/*.spec.js", "**/*.test.js"],
     plugins: { jest: pluginJest },
     languageOptions: {
       globals: pluginJest.environments.globals.globals,
     },
     rules: {
-      'jest/no-disabled-tests': 'warn',
-      'jest/no-focused-tests': 'error',
-      'jest/no-identical-title': 'error',
-      'jest/prefer-to-have-length': 'warn',
-      'jest/valid-expect': 'error',
+      "jest/no-disabled-tests": "warn",
+      "jest/no-focused-tests": "error",
+      "jest/no-identical-title": "error",
+      "jest/prefer-to-have-length": "warn",
+      "jest/valid-expect": "error",
     },
   },
-
 ]);
