@@ -30,3 +30,14 @@ model Task {
   userId       Int
   isCompleted  Boolean  @default(false)
 }
+
+model GithubAccount {
+  id            Int    @id @default(autoincrement())
+  githubName    String @unique
+  @@map("classRoll")
+}
+
+model Origin {
+  id  Int @id @default(autoincrement())
+  origin  String @unique
+}

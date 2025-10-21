@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Add Origins To Task Store</title>
+  </head>
+  <body id="body">
+    <% if (errors) {
+      errors.forEach((err) => { %>
+        <div style="color: red;">
+          <%= err %>
+        </div>
+      <% })
+    } %>
+    <% if (info) {
+      info.forEach((msg) => { %>
+        <div>
+          <%= msg %>
+        </div>
+      <% })
+    } %>

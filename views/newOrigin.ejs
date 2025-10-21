@@ -1,0 +1,13 @@
+<%- include("../partials/head", {errors, info}) %>
+<br/>
+<p>You are logged on with Github ID <% username %>.</p>
+<p>Enter the origin for your app in the entry field below and click on add.  The origin is a URL like "https://this.that.com".  
+    It must be an https URL.  You are assigned this URL when you deploy your app.  You can add several origins, but please don't add more than two or three!</p>
+<div>
+<form>
+    <input type="url" name="newOrigin"><br/><br/>
+    <button>Add</button>
+    <input type="hidden" name="_csrf" value="<% _csrf %>"> 
+</form>
+</div>
+<a href="/origin/logoff"><button>Logoff</button></a>
