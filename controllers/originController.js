@@ -31,18 +31,22 @@ const githubCallback = (req, res, next) => {
       });
 
       if (!account) {
-        req.flash(
-          "error",
-          "Your GitHub account is not authorized. Contact your Cohort Instructional Lead."
-        );
-        return req.logout(() => res.redirect("/origin"));
+        return req.logout(() => {
+          req.flash(
+            "error",
+            "Your GitHub account is not authorized. Contact your Cohort Instructional Lead."
+          );
+          res.redirect("/origin");
+        });
       }
 
       // Success — user exists in authorized list
-      req.session._csrf = randomUUID();
-      return res.redirect("/origin/addOrigin");
-    } catch (error) {
-      console.error("GitHub callback error:", error);
+      req.login(user, function (err) {
+        if (err) return next(err);
+        req.session._csrf = randomUUID();
+        return res.redirect("/origin/addOrigin");
+      });
+    } catch {
       req.flash("error", "Unexpected error during GitHub login.");
       return res.redirect("/origin");
     }
@@ -58,7 +62,7 @@ const newOrigin = (req, res) => {
     info: req.flash("info"),
     errors: req.flash("error"),
     _csrf: req.session._csrf,
-    username: req.user.username,
+    username: req.user,
   });
 };
 
@@ -75,7 +79,11 @@ const createOrigin = async (req, res) => {
       );
     } else {
       try {
-        await prisma.origin.create(url.origin.toLowerCase());
+        await prisma.origin.create({
+          data: { origin: url.origin.toLowerCase() },
+        });
+        const app = require("../app");
+        app.origins.push(url.origin);
         req.flash("info", `The origin ${url.origin} has been added.`);
       } catch (e) {
         if (e.name === "PrismaClientKnownRequestError" && e.code == "P2002") {
@@ -98,7 +106,7 @@ const createOrigin = async (req, res) => {
     info: req.flash("info"),
     errors: req.flash("error"),
     _csrf: req.session._csrf,
-    username: req.user.username,
+    username: req.user,
   });
 };
 

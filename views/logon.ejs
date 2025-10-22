@@ -1,10 +1,14 @@
-<%- include("../partials/head", {errors, info}) %>
+<%- include("./partials/head", {errors, info}) %>
 <div style=" display: flex;
   justify-content: center;
   align-items: center;">
 <p>If you have deployed your app to the Internet, and if it calls this back end, 
-    you need to enroll the origin for your app.  To do that, first logon using the button below.</p><br/>
+    you need to enroll the origin for your app.  To do that, first logon using the button below.</p>
+</div>
+<div style=" display: flex;
+  justify-content: center;
+  align-items: center;">
 <a href="/origin/auth/github"><button>Logon with Github</button></a>
-<div>
+</div>
 </body>
 </html>

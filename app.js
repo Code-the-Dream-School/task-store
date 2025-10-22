@@ -31,7 +31,7 @@ app.use(helmet());
 const port = process.env.PORT || 3000;
 const origins = [];
 if (process.env.DEFAULT_ORIGINS) {
-  const originArray = process.env.ALLOWED_ORIGINS.split(",");
+  const originArray = process.env.DEFAULT_ORIGINS.split(",");
   originArray.forEach((orig) => {
     orig = orig.trim();
     if (orig.length > 4) {
@@ -51,6 +51,7 @@ const loadOrigins = async () => {
     console.error("Couldn't load origins from the table.");
   }
 };
+loadOrigins();
 app.use(
   cors({
     origin: origins,
@@ -61,7 +62,7 @@ app.use(
 );
 const originSetup = require("./origins/origins");
 originSetup(app);
-app.use(require("./routes/origin"));
+app.use("/origin", require("./routes/origin"));
 // app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 app.use("/api-docs", swaggerUI.serve, (req, res, next) => {
   // Create a fresh spec object dynamically per request
@@ -126,4 +127,4 @@ process.on("unhandledRejection", (reason) => {
   shutdown();
 });
 
-module.exports = { app, server };
+module.exports = { app, server, origins };

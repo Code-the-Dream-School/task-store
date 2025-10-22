@@ -14,9 +14,8 @@ const originSetup = (app) => {
   );
 
   // --- Initialize passport ---
-  app.use(passport.initialize());
-  app.use(passport.session());
 
+ 
   // --- Configure passport strategy ---
   passport.use(
     new GitHubStrategy(
@@ -33,13 +32,16 @@ const originSetup = (app) => {
   );
 
   // --- Serialize and deserialize user ---
-  passport.serializeUser((user, done) => done(null, user));
+  passport.serializeUser((user, done) => done(null, user.username));
   passport.deserializeUser((obj, done) => done(null, obj));
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   // --- Routes ---
   app.set("view engine", "ejs");
+
   app.use(express.urlencoded({ extended: true }));
-  app.use(require("connect-flash"));
+  app.use(require("connect-flash")());
 };
 
 module.exports = originSetup;
