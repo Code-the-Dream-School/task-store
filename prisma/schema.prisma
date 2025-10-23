@@ -19,6 +19,7 @@ model User {
   email         String @unique
   name          String
   hashedPassword String
+  creationDate DateTime @default(now())
   tasks          Task[]
 }
 
@@ -34,10 +35,12 @@ model Task {
 model GithubAccount {
   id            Int    @id @default(autoincrement())
   githubName    String @unique
+  creationDate DateTime @default(now())
   @@map("classRoll")
 }
 
 model Origin {
   id  Int @id @default(autoincrement())
+  creationDate DateTime @default(now())
   origin  String @unique
 }
