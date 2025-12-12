@@ -68,6 +68,9 @@ const userRouter = require("./routes/user");
 app.use("/user", userRouter);
 const taskRouter = require("./routes/task");
 app.use("/tasks", jwtMiddleware, taskRouter);
+app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/tasks", require("./routes/taskRoutes"));
+// app.use("/api/analytics", require("./routes/analyticsRoutes"));
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
