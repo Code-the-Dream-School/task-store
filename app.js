@@ -28,17 +28,18 @@ app.use(express.json({ limit: "100kb" }));
 app.use(xss());
 app.use(helmet());
 const port = process.env.PORT || 3000;
-const origins = [];
-if (process.env.ALLOWED_ORIGINS) {
-  const originArray = process.env.ALLOWED_ORIGINS.split(",");
-  originArray.forEach((orig) => {
-    orig = orig.trim();
-    if (orig.length > 4) {
-      origins.push(orig);
-    }
-  });
-}
-if (origins.length) {
+// const origins = [];
+const origins = true;
+// if (process.env.ALLOWED_ORIGINS) {
+//   const originArray = process.env.ALLOWED_ORIGINS.split(",");
+//   originArray.forEach((orig) => {
+//     orig = orig.trim();
+//     if (orig.length > 4) {
+//       origins.push(orig);
+//     }
+//   });
+// }
+// if (origins.length) {
   app.use(
     cors({
       origin: origins,
@@ -47,7 +48,7 @@ if (origins.length) {
       allowedHeaders: "CONTENT-TYPE, X-CSRF-TOKEN",
     }),
   );
-}
+// }
 // app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 app.use('/api-docs', swaggerUI.serve, (req, res, next) => {
   // Create a fresh spec object dynamically per request
