@@ -1,5 +1,8 @@
 const prisma = require("../db/prisma");
 const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
+let maxTasksPerUser = 100;
+if (process.env.MAX_TASKS_PER_USER)
+  maxTasksPerUser = parseInt(process.env.MAX_TASKS_PER_USER, 10);
 
 const whereClause = (query) => {
   const filters = [];
@@ -25,20 +28,20 @@ const getFields = (fields) => {
   const fieldList = fields.split(",");
   const taskAttributes = ["title", "priority", "createdAt", "id"];
   const taskFields = fieldList.filter((field) =>
-    taskAttributes.includes(field),
+    taskAttributes.includes(field)
   );
   if (taskFields.length === 0) return null; // need at least one task field
   const userAttributes = ["name", "email"];
   const userFields = fieldList.filter((field) =>
-    userAttributes.includes(field),
+    userAttributes.includes(field)
   );
   const taskSelect = Object.fromEntries(
-    taskFields.map((field) => [field, true]),
+    taskFields.map((field) => [field, true])
   );
   if (userFields.length) {
     //if we want some user fields
     const userSelect = Object.fromEntries(
-      userFields.map((field) => [field, true]),
+      userFields.map((field) => [field, true])
     );
     taskSelect["User"] = { select: userSelect };
   }
@@ -46,6 +49,18 @@ const getFields = (fields) => {
 };
 
 exports.index = async (req, res) => {
+  let orderBy = { createdAt: "desc" };
+  if (
+    req.query.sortBy &&
+    ["createdAt", "title", "priority", "isCompleted"].includes(req.query.sortBy)
+  ) {
+    let direction = req.query.sortDirection === "desc" ? "desc" : "asc";
+    orderBy = { [req.query.sortBy]: direction };
+  }
+  let direction = "asc";
+  if (req.query["sortDirection"] == "desc") {
+    direction = "desc";
+  }
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
@@ -83,7 +98,7 @@ exports.index = async (req, res) => {
     select,
     skip: skip,
     take: limit,
-    orderBy: { createdAt: "desc" },
+    orderBy,
   });
   if (tasks.length === 0) {
     return res.status(404).json({ message: "No tasks found for user" });
@@ -142,6 +157,14 @@ exports.show = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
+  const existingTasksCount = await prisma.Task.count({
+    where: { userId: req.user?.id },
+  });
+  if (existingTasksCount >= maxTasksPerUser) {
+    return res.status(StatusCodes.TOO_MANY_REQUESTS).json({
+      message: `Maximum tasks exceeded (${maxTasksPerUser}).`,
+    });
+  }
   // Use global user_id (set during login/registration)
   const { error, value } = taskSchema.validate(req.body);
 
@@ -229,7 +252,14 @@ exports.bulkCreate = async (req, res, next) => {
       error: "Invalid request data. Expected an array of tasks.",
     });
   }
-
+  const existingTasksCount = await prisma.Task.count({
+    where: { userId: req.user?.id },
+  });
+  if (existingTasksCount + tasks.length > maxTasksPerUser) {
+    return res.status(StatusCodes.TOO_MANY_REQUESTS).json({
+      message: `Maximum tasks exceeded (${maxTasksPerUser}).`,
+    });
+  }
   // Validate all tasks before insertion
   const validTasks = [];
   for (const task of tasks) {
