@@ -3,7 +3,7 @@ const userSchema = require("../validation/userSchema").userSchema;
 const { randomUUID } = require("crypto");
 const jwt = require("jsonwebtoken");
 const { StatusCodes } = require("http-status-codes");
-const { googleGetAccessToken, googleGetUserInfo, generateUserPassword, createUser } = "../services/userService";
+const { googleGetAccessToken, googleGetUserInfo, generateUserPassword, createUser } = require("../services/userService");
 
 const cookieFlags = (req) => {
   return {
@@ -40,7 +40,7 @@ async function comparePassword(inputPassword, storedHash) {
 }
 
 exports.register = async (req, res, next) => {
-if (!req.body) req.body = {};
+  if (!req.body) req.body = {};
   let isPerson = false;
   if (req.body.recaptchaToken) {
     const token = req.body.recaptchaToken;
