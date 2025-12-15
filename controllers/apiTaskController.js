@@ -16,11 +16,20 @@ const whereClause = (query) => {
   if (query.priority) {
     filters.push({ priority: query.priority });
   }
-  if (query.max_date) {
-    filters.push({ createdAt: { lte: new Date(query.max_date) } });
+  function validDate(dateString) {
+    const dateObj = new Date(dateString); // Attempt to create a Date object
+    // Check if the time value is NaN
+    if (isNaN(dateObj.getTime())) return null;
+    return dateObj;
   }
-  if (query.min_date) {
+  query.max_date = validDate(query.max_date);
+  query.min_date = validDate(query.min_date);
+  if (query.max_date && query.min_date) {
+    filters.push({ createdAt: { lte: query.max_date, gte: query.min_date } });
+  } else if (query.min_date) {
     filters.push({ createdAt: { gte: new Date(query.min_date) } });
+  } else if (query.max_date) {
+    filters.push({ createdAt: { lte: new Date(query.max_date) } });
   }
 };
 
@@ -49,18 +58,18 @@ const getFields = (fields) => {
 };
 
 exports.index = async (req, res) => {
-  let orderBy = { createdAt: "desc" };
+  let sortBy = "createdAt"; // default
+  let direction = "desc"; // default if sortBy is not specified
   if (
     req.query.sortBy &&
     ["createdAt", "title", "priority", "isCompleted"].includes(req.query.sortBy)
   ) {
-    let direction = req.query.sortDirection === "desc" ? "desc" : "asc";
-    orderBy = { [req.query.sortBy]: direction };
+    sortBy = req.query.sortBy;
+    direction = "asc"; // defualt if sortBy specified
   }
-  let direction = "asc";
-  if (req.query["sortDirection"] == "desc") {
-    direction = "desc";
-  }
+  if (req.query.sortDirection === "desc") direction = "desc";
+  const orderBy = { [sortBy]: direction };
+
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
@@ -104,7 +113,10 @@ exports.index = async (req, res) => {
     return res.status(404).json({ message: "No tasks found for user" });
   }
   const totalTasks = await prisma.task.count({
-    where: { userId: req.user.id },
+    where: {
+      userId: req.user.id,
+      ...whereClause(req.query),
+    },
   });
   const pagination = {
     page,
@@ -156,7 +168,7 @@ exports.show = async (req, res) => {
   res.status(200).json(task);
 };
 
-exports.create = async (req, res) => {
+exports.create = async (req, res, next) => {
   const existingTasksCount = await prisma.Task.count({
     where: { userId: req.user?.id },
   });
