@@ -3,7 +3,7 @@ const userSchema = require("../validation/userSchema").userSchema;
 const { randomUUID } = require("crypto");
 const jwt = require("jsonwebtoken");
 const { StatusCodes } = require("http-status-codes");
-const { googleGetAccessToken, googleGetUserInfo } = "../services/userService";
+const { googleGetAccessToken, googleGetUserInfo, generateUserPassword, createUser } = "../services/userService";
 
 const cookieFlags = (req) => {
   return {
@@ -258,8 +258,8 @@ exports.googleLogon = async (req, res) => {
         password: randomPassword,
       });
     }
-    setJwtCookie(req, res, user);
-    return res.json({ name: user.name, email: user.email, csrfToken: req.user.csrfToken });
+    const csrfToken = setJwtCookie(req, res, user);
+    return res.json({ name: user.name, email: user.email, csrfToken });
   } catch (error) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       message: "Google auth error: " + error?.message,
