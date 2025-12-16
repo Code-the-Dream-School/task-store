@@ -157,8 +157,13 @@ exports.logon = async (req, res) => {
   }
 
   // Find user by email
-  const user = await prisma.user.findUnique({
-    where: { email },
+  const user = await prisma.user.findFirst({
+    where: {
+      email: {
+        equals: email,
+        mode: "insensitive",
+      },
+    },
   });
 
   if (!user) {
@@ -244,7 +249,7 @@ exports.googleLogon = async (req, res, next) => {
       .json({ message: "Google did not include the user name." });
   }
 
-  let user = await prisma.user.findUnique({
+  let user = await prisma.user.findFirst({
     where: {
       email: {
         equals: googleUserInfo.email,

@@ -1,4 +1,5 @@
 const prisma = require("../db/prisma");
+const { StatusCodes } = require("http-status-codes");
 const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
 let maxTasksPerUser = 100;
 if (process.env.MAX_TASKS_PER_USER)
@@ -31,6 +32,7 @@ const whereClause = (query) => {
   } else if (query.max_date) {
     filters.push({ createdAt: { lte: new Date(query.max_date) } });
   }
+  return filters.length ? { AND: filters } : {};
 };
 
 const getFields = (fields) => {
