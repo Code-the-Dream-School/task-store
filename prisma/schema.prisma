@@ -16,17 +16,19 @@ datasource db {
 
 model User {
   id            Int    @id @default(autoincrement())
+  createdAt     DateTime @default(now()) @db.Timestamp(6) @map("created_at")
   email         String @unique
   name          String
   hashedPassword String
-  tasks          Task[]
+  Task          Task[]
 }
 
 model Task {
   id           Int      @id @default(autoincrement())
   title        String
-  creationDate DateTime @default(now())
-  user   User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt     DateTime @default(now()) @db.Timestamp(6) @map("created_at")
+  priority    String   @default("medium") @db.VarChar(10)
+  User   User     @relation(fields: [userId], references: [id], onDelete: Restrict,  onUpdate: Restrict)
   userId       Int
   isCompleted  Boolean  @default(false)
 }

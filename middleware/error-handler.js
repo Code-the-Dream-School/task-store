@@ -1,5 +1,11 @@
 const { StatusCodes } = require("http-status-codes");
 const errorHandlerMiddleware = (err, _req, res, _next) => {
+  if (err.name === "ValidationError") {
+    return res.status(400).json({
+      message: "Validation failed",
+      details: err.details,
+    });
+  }
   if (err?.name === "PrismaClientInitializationError") {
     console.log("Couldn't connect to the database.  Is it running?");
   } else {

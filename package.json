@@ -4,7 +4,7 @@
   "description": "Code the Dream task store",
   "main": "app.js",
   "type": "commonjs",
-  "engines": { "node": "20.x", "npm": "10.x" },
+  "engines": { "node": "22.x", "npm": "10.x" },
   "scripts": {
     "test": "npx cross-env NODE_ENV=test jest --testPathPatterns=test/ --verbose --maxWorkers=1",
     "dev": "nodemon app.js",
