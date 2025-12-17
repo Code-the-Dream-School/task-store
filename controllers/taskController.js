@@ -44,6 +44,7 @@ const create = async (req, res) => {
   } else {
     const { error, value } = taskSchema.validate(req.body, {abortEarly: false});
     if (error) {
+      console.log(47, error.details);
       return res.status(StatusCodes.BAD_REQUEST).json({error: error.details});
     }
     value.userId = req.user.id;
