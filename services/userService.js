@@ -1,6 +1,8 @@
 const prisma = require("../db/prisma");
 const crypto = require("crypto");
 const util = require("util");
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const scrypt = util.promisify(crypto.scrypt);
 
@@ -67,7 +69,16 @@ const googleGetAccessToken = async (code) => {
   if (!tokenRes.ok) {
     throw new Error("Authentication failed.");
   }
-  const { id_token } = await tokenRes.json();
+  const tokenData = await tokenRes.json();
+  const ticket = await client.verifyIdToken({
+    idToken: tokenData.id_token,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+  const id_token = ticket.getPayload();
+  // const returnedTok = await tokenRes.json();
+  // console.log(71, JSON.stringify(returnedTok));
+  // const { id_token } = await tokenRes.json();
+  // const {id_token} = returnedTok;
   return id_token;
 };
 

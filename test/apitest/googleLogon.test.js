@@ -3,6 +3,26 @@ process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
 const prisma = require("../../db/prisma");
 const httpMocks = require("node-mocks-http");
 const EventEmitter = require("events").EventEmitter;
+
+jest.mock("google-auth-library", () => {
+  const verifyIdTokenMock = jest.fn();
+  verifyIdTokenMock.mockImplementation(async ({ idToken }) => {
+    if (idToken === "bad") {
+      throw new Error("Invalid token");
+    }
+
+    return {
+      getPayload: () => idToken,
+    };
+  });
+  return {
+    OAuth2Client: jest.fn().mockImplementation(() => {
+      return {
+        verifyIdToken: verifyIdTokenMock,
+      };
+    }),
+  };
+});
 const {
   googleLogon: apiGoogleLogon,
 } = require("../../controllers/apiUserController");
@@ -27,6 +47,7 @@ function MockResponseWithCookies() {
   return res;
 }
 let fetchSpy;
+
 beforeAll(async () => {
   // clear database
   await prisma.task.deleteMany(); // delete all tasks
@@ -39,50 +60,50 @@ beforeAll(async () => {
     opts.body = JSON.parse(opts.body);
     if (opts.body.code === 2) {
       // Bob's email
-      return Promise.resolve({
+      return {
         ok: true,
         json: async () => {
-          return Promise.resolve({
+          return {
             id_token: {
               name: "Bob",
               email: "bob@sample.com",
               email_verified: true,
             },
-          });
+          };
         },
-      });
+      };
     }
     if (opts.body.code === 3) {
       // Manuel's email
-      return Promise.resolve({
+      return {
         ok: true,
         json: async () => {
-          return Promise.resolve({
+          return {
             id_token: {
               name: "Manuel",
               email: "manuel@sample.com",
               email_verified: true,
             },
-          });
+          };
         },
-      });
+      };
     }
     if (opts.body.code === 4) {
       // Padma's email
-      return Promise.resolve({
+      return {
         ok: true,
         json: async () => {
-          return Promise.resolve({
+          return {
             id_token: {
               name: "Padma",
               email: "padma@sample.com",
               email_verified: true,
             },
-          });
+          };
         },
-      });
+      };
     }
-    return Promise.resolve({ ok: false });
+    return { ok: false };
   });
 });
 afterAll(() => {
