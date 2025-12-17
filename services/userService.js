@@ -28,7 +28,9 @@ async function createUser(data) {
 }
 
 async function verifyUserPassword(email, inputPassword) {
-  const user = await prisma.user.findFirst({ where: { email: { equals: email, mode: "insensitive" }}});
+  const user = await prisma.user.findFirst({
+    where: { email: { equals: email, mode: "insensitive" } },
+  });
   if (!user) return { user: null, isValid: false };
 
   return {
@@ -51,28 +53,33 @@ const googleGetAccessToken = async (code) => {
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
-    body:   JSON.stringify({
+    body: JSON.stringify({
       code,
       client_id: process.env.GOOGLE_CLIENT_ID,
       client_secret: process.env.GOOGLE_CLIENT_SECRET,
       grant_type: "authorization_code",
       // https://stackoverflow.com/questions/74189161/google-identity-services-sdk-authorization-code-model-in-popup-mode-how-to-r
-      redirect_uri: "postmessage"
-    })
+      redirect_uri: "postmessage",
+    }),
   });
-  const {access_token} = await tokenRes.json();
-  return access_token;
+  if (!tokenRes.ok) {
+    throw new Error("Authentication failed.");
+  }
+  const { id_token } = await tokenRes.json();
+  return id_token;
 };
 
-const googleGetUserInfo = async (accessToken) => {
-  const userInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo";
-  const userInfoRes = await fetch(
-    `${userInfoUrl}?access_token=${accessToken}`
-  );
-  const {name, email, email_verified} = await userInfoRes.json();
-  return {name, email, isEmailVerified: email_verified};
+const googleGetUserInfo = async (id_token) => {
+  // const userInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo";
+  // const userInfoRes = await fetch(
+  //   `${userInfoUrl}?access_token=${accessToken}`
+  // );
+  // const {name, email, email_verified} = await userInfoRes.json();
+  // return {name, email, isEmailVerified: email_verified};
+  const { name, email, email_verified: isEmailVerified } = id_token;
+  return { name, email, isEmailVerified };
 };
 
 module.exports = {
@@ -80,5 +87,5 @@ module.exports = {
   verifyUserPassword,
   generateUserPassword,
   googleGetAccessToken,
-  googleGetUserInfo
+  googleGetUserInfo,
 };

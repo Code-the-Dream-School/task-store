@@ -1,11 +1,15 @@
 require("dotenv").config();
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
 const prisma = require("../../db/prisma");
-const jwtMiddleware = require("../../middleware/jwtMiddleware")
+const jwtMiddleware = require("../../middleware/jwtMiddleware");
 const httpMocks = require("node-mocks-http");
-const EventEmitter = require('events').EventEmitter;
-const { register, logon, logoff } = require("../../controllers/apiUserController");
-const waitForRouteHandlerCompletion = require("../waitForRouteHandlerCompletion.js")
+const EventEmitter = require("events").EventEmitter;
+const {
+  register,
+  logon,
+  logoff,
+} = require("../../controllers/apiUserController");
+const waitForRouteHandlerCompletion = require("../waitForRouteHandlerCompletion.js");
 const jwt = require("jsonwebtoken");
 let saveReq;
 
@@ -16,8 +20,8 @@ let saveData = null;
 const cookie = require("cookie");
 function MockResponseWithCookies() {
   const res = httpMocks.createResponse({
-  eventEmitter: EventEmitter,
-});
+    eventEmitter: EventEmitter,
+  });
   res.cookie = (name, value, options = {}) => {
     const serialized = cookie.serialize(name, String(value), options);
     let currentHeader = res.getHeader("Set-Cookie");
@@ -52,7 +56,7 @@ describe("testing logon, register, and logoff", () => {
       body: { email: "bob@sample.com", password: "Pa$$word20", name: "Bob" },
     });
     saveRes = MockResponseWithCookies();
-    await waitForRouteHandlerCompletion(register,req,saveRes);
+    await waitForRouteHandlerCompletion(register, req, saveRes);
     expect(saveRes.statusCode).toBe(201); // success!
   });
   it("34. The user can be logged on", async () => {
@@ -61,7 +65,7 @@ describe("testing logon, register, and logoff", () => {
       body: { email: "bob@sample.com", password: "Pa$$word20" },
     });
     saveRes = MockResponseWithCookies();
-    await waitForRouteHandlerCompletion(logon,req,saveRes);
+    await waitForRouteHandlerCompletion(logon, req, saveRes);
     expect(saveRes.statusCode).toBe(200); // success!
   });
   it("35. A string in the Set-Cookie array starts with jwt=.", () => {
@@ -85,10 +89,10 @@ describe("testing logon, register, and logoff", () => {
       body: { email: "bob@sample.com", password: "bad password" },
     });
     saveRes = MockResponseWithCookies();
-    await waitForRouteHandlerCompletion(logon,req,saveRes);
+    await waitForRouteHandlerCompletion(logon, req, saveRes);
     expect(saveRes.statusCode).toBe(401);
   });
-    it("40. You can now logoff.", async () => {
+  it("40. You can now logoff.", async () => {
     const req = httpMocks.createRequest({
       method: "POST",
     });
@@ -119,55 +123,69 @@ describe("testing logon, register, and logoff", () => {
   });
 });
 
-describe("Testing JWT middleware", () =>{
-  it("61. Returns a 401 if the JWT is not present", async() =>{
+describe("Testing JWT middleware", () => {
+  it("61. Returns a 401 if the JWT is not present", async () => {
     const req = httpMocks.createRequest({
-      method: "POST"
-    })
+      method: "POST",
+    });
     saveRes = MockResponseWithCookies();
-    await waitForRouteHandlerCompletion(jwtMiddleware,req,saveRes);
+    await waitForRouteHandlerCompletion(jwtMiddleware, req, saveRes);
     expect(saveRes.statusCode).toBe(401);
-  })
-  it("62. Returns a 401 if the JWT is invalid", async ()=>{
+  });
+  it("62. Returns a 401 if the JWT is invalid", async () => {
     const req = httpMocks.createRequest({
-      method: "POST"
-    })
+      method: "POST",
+    });
     saveRes = MockResponseWithCookies();
-    const jwtCookie = jwt.sign({id: 5, csrfToken: "badToken"}, "badSecret", { expiresIn: "1h" });
-    req.cookies = {jwt: jwtCookie }
-    await waitForRouteHandlerCompletion(jwtMiddleware,req,saveRes);
+    const jwtCookie = jwt.sign({ id: 5, csrfToken: "badToken" }, "badSecret", {
+      expiresIn: "1h",
+    });
+    req.cookies = { jwt: jwtCookie };
+    await waitForRouteHandlerCompletion(jwtMiddleware, req, saveRes);
     expect(saveRes.statusCode).toBe(401);
-  })
-  it("63. Returns a 401 if the JWT is valid but the token isn't", async ()=>{
+  });
+  it("63. Returns a 401 if the JWT is valid but the token isn't", async () => {
     const req = httpMocks.createRequest({
-      method: "POST"
-    })
+      method: "POST",
+    });
     saveRes = MockResponseWithCookies();
-    const jwtCookie = jwt.sign({id: 5, csrfToken: "badtoken"}, process.env.JWT_SECRET, { expiresIn: "1h" });
-    req.cookies = {jwt: jwtCookie }
+    const jwtCookie = jwt.sign(
+      { id: 5, csrfToken: "badtoken" },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    req.cookies = { jwt: jwtCookie };
     if (!req.headers) {
-      req.headers={};
+      req.headers = {};
     }
-    req.headers["X-CSRF-TOKEN"]= "goodtoken"
-    await waitForRouteHandlerCompletion(jwtMiddleware,req,saveRes);
+    req.headers["X-CSRF-TOKEN"] = "goodtoken";
+    await waitForRouteHandlerCompletion(jwtMiddleware, req, saveRes);
     expect(saveRes.statusCode).toBe(401);
-  })
-  it("64. Calls next() if both the token and the jwt are good.", async ()=>{
+  });
+  it("64. Calls next() if both the token and the jwt are good.", async () => {
     const req = httpMocks.createRequest({
-      method: "POST"
-    })
+      method: "POST",
+    });
     saveRes = MockResponseWithCookies();
-    const jwtCookie = jwt.sign({id: 5, csrfToken: "goodtoken"}, process.env.JWT_SECRET, { expiresIn: "1h" });
-    req.cookies = {jwt: jwtCookie }
+    const jwtCookie = jwt.sign(
+      { id: 5, csrfToken: "goodtoken" },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    req.cookies = { jwt: jwtCookie };
     if (!req.headers) {
-      req.headers={};
+      req.headers = {};
     }
-    req.headers["X-CSRF-TOKEN"]= "goodtoken"
-    const next = await waitForRouteHandlerCompletion(jwtMiddleware,req,saveRes);
-    saveReq=req;
+    req.headers["X-CSRF-TOKEN"] = "goodtoken";
+    const next = await waitForRouteHandlerCompletion(
+      jwtMiddleware,
+      req,
+      saveRes
+    );
+    saveReq = req;
     expect(next).toHaveBeenCalled();
-  })
-  it("65. Sets the req.user before calling next()", () =>{
+  });
+  it("65. Sets the req.user before calling next()", () => {
     expect(saveReq.user.id).toBe(5);
-  })
-})
+  });
+});
