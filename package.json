@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
+    "@faker-js/faker": "^10.1.0",
     "cookie": "^1.0.2",
     "cross-env": "^7.0.3",
     "csv-parser": "^3.2.0",
