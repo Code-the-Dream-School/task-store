@@ -23,14 +23,14 @@ const whereClause = (query) => {
     if (isNaN(dateObj.getTime())) return null;
     return dateObj;
   }
-  query.max_date = validDate(query.max_date);
-  query.min_date = validDate(query.min_date);
-  if (query.max_date && query.min_date) {
-    filters.push({ createdAt: { lte: query.max_date, gte: query.min_date } });
-  } else if (query.min_date) {
-    filters.push({ createdAt: { gte: new Date(query.min_date) } });
-  } else if (query.max_date) {
-    filters.push({ createdAt: { lte: new Date(query.max_date) } });
+  const max_date = validDate(query.max_date);
+  const min_date = validDate(query.min_date);
+  if (max_date && min_date) {
+    filters.push({ createdAt: { lte: max_date, gte: min_date } });
+  } else if (min_date) {
+    filters.push({ createdAt: { gte: min_date } });
+  } else if (max_date) {
+    filters.push({ createdAt: { lte: max_date } });
   }
   return filters.length ? { AND: filters } : {};
 };
