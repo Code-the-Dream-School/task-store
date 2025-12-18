@@ -28,9 +28,9 @@ const whereClause = (query) => {
   if (max_date && min_date) {
     filters.push({ createdAt: { lte: max_date, gte: min_date } });
   } else if (min_date) {
-    filters.push({ createdAt: { gte: new Date(min_date) } });
+    filters.push({ createdAt: { gte: min_date } });
   } else if (max_date) {
-    filters.push({ createdAt: { lte: new Date(max_date) } });
+    filters.push({ createdAt: { lte: max_date } });
   }
   return filters.length ? { AND: filters } : {};
 };
