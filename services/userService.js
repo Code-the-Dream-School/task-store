@@ -51,7 +51,7 @@ const generateUserPassword = (
     .join("");
 };
 
-const googleGetAccessToken = async (code) => {
+const googleGetUserInfo = async (code) => {
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: {
@@ -74,29 +74,13 @@ const googleGetAccessToken = async (code) => {
     idToken: tokenData.id_token,
     audience: process.env.GOOGLE_CLIENT_ID,
   });
-  const id_token = ticket.getPayload();
-  // const returnedTok = await tokenRes.json();
-  // console.log(71, JSON.stringify(returnedTok));
-  // const { id_token } = await tokenRes.json();
-  // const {id_token} = returnedTok;
-  return id_token;
-};
-
-const googleGetUserInfo = async (id_token) => {
-  // const userInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo";
-  // const userInfoRes = await fetch(
-  //   `${userInfoUrl}?access_token=${accessToken}`
-  // );
-  // const {name, email, email_verified} = await userInfoRes.json();
-  // return {name, email, isEmailVerified: email_verified};
-  const { name, email, email_verified: isEmailVerified } = id_token;
-  return { name, email, isEmailVerified };
+  const { name, email, email_verified: isEmailVerified } = ticket.getPayload();
+  return {name, email, isEmailVerified };
 };
 
 module.exports = {
   createUser,
   verifyUserPassword,
   generateUserPassword,
-  googleGetAccessToken,
   googleGetUserInfo,
 };
