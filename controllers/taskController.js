@@ -10,7 +10,8 @@ const index = async (req, res) => {
     },
     omit: { userId: true },
   };
-  if (req.query["sortBy"]) {
+  if (req.query["sortBy"] === "creationDate") req.query["sortBy"] = "createdAt";
+  if (["createdAt","priority","title","isCompleted"].includes(req.query["sortBy"])) {
     let direction = "asc";
     if (req.query["sortDirection"] == "desc") {
       direction = "desc";

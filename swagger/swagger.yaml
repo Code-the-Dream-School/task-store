@@ -3,8 +3,10 @@ info:
   title: Tasks store
   description: ''
   version: 1.0.0
+  license:
+    name: MIT
 servers:
-  - url: https://node-homework-sample.onrender.com/
+  - url: https://node-homework-sample.onrender.com
 tags:
   - name: user
     description: Authorization
@@ -17,9 +19,12 @@ components:
       in: header
       name: X-CSRF-TOKEN
       description: CSRF Token required for Tasks operations.
+
+security: []
 paths:
   /user:
     post:
+      operationId: userRegister
       tags:
         - user
       summary: Email registration
@@ -61,6 +66,7 @@ paths:
                   type: string
   /user/logon:
     post:
+      operationId: userLogon
       tags:
         - user
       summary: Email logon
@@ -96,6 +102,7 @@ paths:
                   type: string
   /user/googleLogon:
     post:
+      operationId: userGoogleLogon
       tags:
         - user
       summary: Google registration/logon
@@ -131,6 +138,7 @@ paths:
                   type: string
   /user/logoff:
     post:
+      operationId: userLogoff
       tags:
         - user
       summary: Logoff
@@ -147,6 +155,7 @@ paths:
               type: object
   /tasks:
     post:
+      operationId: tasksCreate
       tags:
         - tasks
       summary: Create Task
@@ -169,6 +178,7 @@ paths:
                 isCompleted:
                   type: boolean
     get:
+      operationId: tasksGet
       tags:
         - tasks
       summary: Get Tasks
@@ -198,6 +208,7 @@ paths:
           description: Tasks not found
   /tasks/{id}:
     get:
+      operationId: taskGet
       tags:
         - tasks
       summary: Get Task
@@ -216,6 +227,7 @@ paths:
         '404':
           description: Not found
     patch:
+      operationId: taskUpdate
       tags:
         - tasks
       summary: Update Task
@@ -244,6 +256,7 @@ paths:
                 isCompleted:
                   type: boolean
     delete:
+      operationId: taskDelete
       tags:
         - tasks
       summary: Delete Task
@@ -256,6 +269,361 @@ paths:
           description: task id
       security:
         - CSRFToken: []
+      responses:
+        '200':
+          description: Successful response
+        '404':
+          description: Not found
+  /api/users/register:
+    post:
+      operationId: apiUsersRegister
+      tags:
+        - user
+      summary: Email registration
+      description: 'Register a new user with email and password.'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                recaptchaToken:
+                  type: string
+      responses:
+        '201':
+          description: User created with welcome tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                  welcomeTasks:
+                    type: array
+                    items:
+                      type: object
+                  transactionStatus:
+                    type: string
+                  csrfToken:
+                    type: string
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: jwt=<string>; Max-Age=3600; Path=/; HttpOnly;
+        '400':
+          description: Bad request / email already registered
+
+  /api/users/logon:
+    post:
+      operationId: apiUsersLogon
+      tags:
+        - user
+      summary: Email logon
+      description: 'Log a user in with email and password.'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successful logon
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  csrfToken:
+                    type: string
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: jwt=<string>; Max-Age=3600; Path=/; HttpOnly;
+        '400':
+          description: Missing credentials
+        '401':
+          description: Invalid credentials
+
+  /api/users/googleLogon:
+    post:
+      operationId: apiUsersGoogleLogon
+      tags:
+        - user
+      summary: Google registration/logon
+      description: Exchange Google auth code for account creation or login.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+      responses:
+        '200':
+          description: Successful response with csrf token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  csrfToken:
+                    type: string
+        '401':
+          description: Unauthorized / invalid code
+
+  /api/users/logoff:
+    post:
+      operationId: apiUsersLogoff
+      tags:
+        - user
+      summary: Logoff
+      description: 'Clear authentication cookie and log the user out.'
+      security:
+        - CSRFToken: []
+      responses:
+        '200':
+          description: Successful response
+
+  /api/tasks/bulk:
+    post:
+      operationId: apiTasksBulkCreate
+      tags:
+        - tasks
+      summary: Bulk create tasks
+      description: Create multiple tasks in a single request.
+      security:
+        - CSRFToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tasks:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                      isCompleted:
+                        type: boolean
+                      priority:
+                        type: string
+      responses:
+        '201':
+          description: Created with counts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  tasksCreated:
+                    type: integer
+                  totalRequested:
+                    type: integer
+        '400':
+          description: Bad request
+        '429':
+          description: Maximum tasks exceeded
+
+  /api/tasks:
+    get:
+      operationId: apiTasksGet
+      tags:
+        - tasks
+      summary: Get Tasks (paginated & filtered)
+      description: Retrieve tasks for the authenticated user with filtering, paging, and field selection.
+      security:
+        - CSRFToken: []
+      parameters:
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+          description: 'Field to sort by. One of: createdAt, title, priority, isCompleted'
+        - in: query
+          name: sortDirection
+          schema:
+            type: string
+          description: 'Sort direction: asc or desc'
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: Page number (default 1)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: Page size (default 10)
+        - in: query
+          name: fields
+          schema:
+            type: string
+          description: 'Comma-separated list of fields to include. Task fields: title, priority, createdAt, id. User fields: name,email'
+        - in: query
+          name: find
+          schema:
+            type: string
+          description: Search text to match in the title (case-insensitive contains)
+        - in: query
+          name: isCompleted
+          schema:
+            type: string
+          description: 'Filter by completion status: "true" or "false"'
+        - in: query
+          name: priority
+          schema:
+            type: string
+          description: Filter by priority (e.g., low, medium, high)
+        - in: query
+          name: min_date
+          schema:
+            type: string
+            format: date-time
+          description: Minimum creation date (ISO format)
+        - in: query
+          name: max_date
+          schema:
+            type: string
+            format: date-time
+          description: Maximum creation date (ISO format)
+      responses:
+        '200':
+          description: Successful response with tasks and pagination
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      type: object
+                  pagination:
+                    type: object
+        '404':
+          description: Tasks not found
+    post:
+      operationId: apiTasksCreate
+      tags:
+        - tasks
+      summary: Create Task
+      description: Create a new task for the authenticated user.
+      security:
+        - CSRFToken: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                isCompleted:
+                  type: boolean
+                priority:
+                  type: string
+      responses:
+        '201':
+          description: Created
+        '429':
+          description: Maximum tasks exceeded
+
+  /api/tasks/{id}:
+    get:
+      operationId: apiTaskGet
+      tags:
+        - tasks
+      summary: Get Task
+      description: Retrieve a single task by id for the authenticated user.
+      security:
+        - CSRFToken: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: task id
+      responses:
+        '200':
+          description: Successful response
+        '404':
+          description: Not found
+    patch:
+      operationId: apiTaskUpdate
+      tags:
+        - tasks
+      summary: Update Task
+      description: Update fields on an existing task.
+      security:
+        - CSRFToken: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: task id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                isCompleted:
+                  type: boolean
+                priority:
+                  type: string
+      responses:
+        '200':
+          description: Successful response
+        '404':
+          description: Not found
+    delete:
+      operationId: apiTaskDelete
+      tags:
+        - tasks
+      summary: Delete Task
+      description: Delete a task by id.
+      security:
+        - CSRFToken: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: task id
       responses:
         '200':
           description: Successful response
