@@ -4,7 +4,6 @@ const {
   createUser,
   verifyUserPassword,
   generateUserPassword,
-  googleGetAccessToken,
   googleGetUserInfo,
 } = require("../services/userService");
 const { randomUUID } = require("crypto");
@@ -53,9 +52,14 @@ const googleLogon = async (req, res) => {
         .status(StatusCodes.UNAUTHORIZED)
         .json({ message: "The Google authentication code was not provided." });
     }
-    const googleAccessToken = await googleGetAccessToken(req.body.code);
-    const googleUserInfo = await googleGetUserInfo(googleAccessToken);
-
+    let googleUserInfo;
+    try {
+      googleUserInfo = await googleGetUserInfo(req.body.code);
+    } catch {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "Authentication failed." });
+    }
     if (!googleUserInfo.email || !googleUserInfo.isEmailVerified) {
       // throw new Error("The email is either missing or not verified.");
       return res.status(StatusCodes.UNAUTHORIZED).json({
