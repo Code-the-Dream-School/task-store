@@ -9,6 +9,14 @@ const {
 } = require("../services/userService");
 
 const cookieFlags = (req) => {
+  const thisHost = req.protocol + "://" + req.get("Host");
+  if (req.get("Origin") === thisHost) {
+    return {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    };
+  }
   return {
     ...(process.env.NODE_ENV === "production" && { domain: req.hostname }), // add domain into cookie for production only
     httpOnly: true,
