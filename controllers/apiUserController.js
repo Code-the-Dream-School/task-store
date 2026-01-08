@@ -9,7 +9,8 @@ const {
 } = require("../services/userService");
 
 const cookieFlags = (req) => {
-  if (req.get("Origin") === req.get("Host")) {
+  const thisHost = req.protocol + "://" + req.get("Host");
+  if (req.get("Origin") === thisHost) {
     return {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
