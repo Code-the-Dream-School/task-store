@@ -11,6 +11,13 @@ const jwt = require("jsonwebtoken");
 
 const prisma = require("../db/prisma");
 const cookieFlags = (req) => {
+  if (req.get("Origin") === req.get("Host")) {
+    return {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    };
+  }
   return {
     ...(process.env.NODE_ENV === "production" && { domain: req.hostname }), // add domain into cookie for production only
     httpOnly: true,
