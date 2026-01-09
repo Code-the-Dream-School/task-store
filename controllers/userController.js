@@ -12,7 +12,7 @@ const jwt = require("jsonwebtoken");
 const prisma = require("../db/prisma");
 const cookieFlags = (req) => {
   const thisHost = req.protocol + "://" + req.get("Host");
-  const rewriteHeader = req.get("XX-Same-Origin-Proxy");
+  const rewriteHeader = req.get("X-Same-Origin-Proxy");
   if (
     rewriteHeader === "vercel" ||
     rewriteHeader === "vite" ||
