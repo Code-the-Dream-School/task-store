@@ -10,7 +10,12 @@ const {
 
 const cookieFlags = (req) => {
   const thisHost = req.protocol + "://" + req.get("Host");
-  if (req.get("Origin") === thisHost) {
+  const rewriteHeader = req.get("XX-Same-Origin-Proxy");
+  if (
+    rewriteHeader === "vercel" ||
+    rewriteHeader === "vite" ||
+    req.getreq.get("Origin") === thisHost
+  ) {
     return {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
