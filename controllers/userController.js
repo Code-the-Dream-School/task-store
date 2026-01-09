@@ -16,7 +16,7 @@ const cookieFlags = (req) => {
   if (
     rewriteHeader === "vercel" ||
     rewriteHeader === "vite" ||
-    req.getreq.get("Origin") === thisHost
+    req.get("Origin") === thisHost
   ) {
     return {
       httpOnly: true,
