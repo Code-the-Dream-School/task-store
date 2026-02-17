@@ -10,26 +10,26 @@ const { randomUUID } = require("crypto");
 const jwt = require("jsonwebtoken");
 
 const prisma = require("../db/prisma");
-const cookieFlags = (req) => {
-  const thisHost = req.protocol + "://" + req.get("Host");
-  const rewriteHeader = req.get("X-Same-Origin-Proxy");
-  if (
-    rewriteHeader === "vercel" ||
-    rewriteHeader === "vite" ||
-    req.get("Origin") === thisHost
-  ) {
-    return {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    };
-  }
+const cookieFlags = () => {
+  // const thisHost = req.protocol + "://" + req.get("Host");
+  // const rewriteHeader = req.get("X-Same-Origin-Proxy");
+  // if (
+  //   rewriteHeader === "vercel" ||
+  //   rewriteHeader === "vite" ||
+  //   req.get("Origin") === thisHost
+  // ) {
   return {
-    ...(process.env.NODE_ENV === "production" && { domain: req.hostname }), // add domain into cookie for production only
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    sameSite: "strict",
   };
+  // }
+  // return {
+  //   ...(process.env.NODE_ENV === "production" && { domain: req.hostname }), // add domain into cookie for production only
+  //   httpOnly: true,
+  //   secure: process.env.NODE_ENV === "production",
+  //   sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+  // };
 };
 
 const setJwtCookie = (req, res, user) => {
@@ -39,7 +39,7 @@ const setJwtCookie = (req, res, user) => {
   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" }); // 1 hour expiration
 
   // Set cookie.  Note that the cookie flags have to be different in production and in test.
-  res.cookie("jwt", token, { ...cookieFlags(req), maxAge: 3600000 }); // 1 hour expiration
+  res.cookie("jwt", token, { ...cookieFlags(), maxAge: 3600000 }); // 1 hour expiration
   return payload.csrfToken; // this is needed in the body returned by login() or register()
 };
 
@@ -171,7 +171,7 @@ const register = async (req, res) => {
 };
 
 const logoff = async (req, res) => {
-  res.clearCookie("jwt", cookieFlags(req));
+  res.clearCookie("jwt", cookieFlags());
   res.sendStatus(StatusCodes.OK);
 };
 
