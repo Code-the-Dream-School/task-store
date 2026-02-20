@@ -18,7 +18,7 @@ app.use(
   rateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // limit each IP to 100 requests per windowMs
-  }),
+  })
 );
 const notFoundMiddleware = require("./middleware/not-found");
 const errorHandlerMiddleware = require("./middleware/error-handler");
@@ -29,34 +29,32 @@ app.use(xss());
 app.use(helmet());
 const port = process.env.PORT || 3000;
 // const origins = [];
-const origins = true;
-// if (process.env.ALLOWED_ORIGINS) {
-//   const originArray = process.env.ALLOWED_ORIGINS.split(",");
-//   originArray.forEach((orig) => {
-//     orig = orig.trim();
-//     if (orig.length > 4) {
-//       origins.push(orig);
-//     }
-//   });
-// }
+const origins = "http://localhost:3001";
+if (process.env.ALLOWED_ORIGINS) {
+  const originArray = process.env.ALLOWED_ORIGINS.split(",");
+  originArray.forEach((orig) => {
+    orig = orig.trim();
+    if (orig.length > 4) {
+      origins.push(orig);
+    }
+  });
+}
 // if (origins.length) {
-  app.use(
-    cors({
-      origin: origins,
-      credentials: true,
-      methods: "GET,POST,PATCH,DELETE",
-      allowedHeaders: "CONTENT-TYPE, X-CSRF-TOKEN",
-    }),
-  );
+app.use(
+  cors({
+    origin: origins,
+    credentials: true,
+    methods: "GET,POST,PATCH,DELETE",
+    allowedHeaders: "CONTENT-TYPE, X-CSRF-TOKEN",
+  })
+);
 // }
 // app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
-app.use('/api-docs', swaggerUI.serve, (req, res, next) => {
+app.use("/api-docs", swaggerUI.serve, (req, res, next) => {
   // Create a fresh spec object dynamically per request
   const spec = {
     ...swaggerDocument,
-    servers: [
-      { url: `${req.protocol}://${req.get('host')}` }
-    ]
+    servers: [{ url: `${req.protocol}://${req.get("host")}` }],
   };
 
   // Serve Swagger UI with the dynamic spec
@@ -78,7 +76,7 @@ app.use(errorHandlerMiddleware);
 let server = null;
 try {
   server = app.listen(port, () =>
-    console.log(`Server is listening on port ${port}...`),
+    console.log(`Server is listening on port ${port}...`)
   );
 } catch (error) {
   console.log(error);
