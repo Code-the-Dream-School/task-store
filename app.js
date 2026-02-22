@@ -28,8 +28,8 @@ app.use(express.json({ limit: "100kb" }));
 app.use(xss());
 app.use(helmet());
 const port = process.env.PORT || 3000;
-// const origins = [];
-const origins = "http://localhost:3001";
+// Initialize as an array, including your default origin
+const origins = ["http://localhost:3001"];
 if (process.env.ALLOWED_ORIGINS) {
   const originArray = process.env.ALLOWED_ORIGINS.split(",");
   originArray.forEach((orig) => {
